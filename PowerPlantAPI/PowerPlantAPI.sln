@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerPlantAPI", "PowerPlantAPI.csproj", "{8F41754B-CA90-4EF4-8EB0-DFB03AB49FCE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A04B5DC5-73E8-43B0-B306-355FD1CC46BA}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F41754B-CA90-4EF4-8EB0-DFB03AB49FCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F41754B-CA90-4EF4-8EB0-DFB03AB49FCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F41754B-CA90-4EF4-8EB0-DFB03AB49FCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F41754B-CA90-4EF4-8EB0-DFB03AB49FCE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {09050D43-EF42-440C-986F-52F73F6F043A}
+	EndGlobalSection
+EndGlobal
