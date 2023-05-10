@@ -113,7 +113,7 @@ docker run -e "ASPNETCORE_ENVIRONMENT=Development" -p 8887:443 -p 8888:80 powerp
 ```
 
  warning : 
- Ad this following param in Docker Engine to build an image. 
+ Add this following param in Docker Engine to build an image. 
  ```
   "dns": [
     "1.1.1.1",
