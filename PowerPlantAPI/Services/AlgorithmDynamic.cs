@@ -1,13 +1,12 @@
 ﻿using PowerPlantAPI.Models;
-using System.Collections.Generic;
 
 namespace PowerPlantAPI.Services
 {
 
 
-    public class DyncamicAlgo : IProductionPlanCalculator
+    public class AlgorithmDynamic : IProductionPlanCalculator
     {
-        private PreCalculedValue[,] PreCalculedValue { get; set; }
+        private PreComputedValue[,] PreComputedValues { get; set; }
 
         private decimal Step { get; set; }
 
@@ -17,35 +16,35 @@ namespace PowerPlantAPI.Services
 
         private int NumberOfPowerPlant => PowerPlantList.Count();
 
-        public DyncamicAlgo(List<PowerPlant> powerPlantList, decimal load, decimal step)
+        public AlgorithmDynamic(List<PowerPlant> powerPlantList, decimal load, decimal step)
         {
             PowerPlantList = powerPlantList;
             Step = step;
             Load = load;
-            PreCalculedValue = Util.InitArray((int)(Load / Step), NumberOfPowerPlant);
+            PreComputedValues = PreComputedValue.InitArray((int)(Load / Step), NumberOfPowerPlant);
         }
 
         public IEnumerable<ProductionPlan> CreateProductionPlan()
         {
-            DynamicAlgo(Load, NumberOfPowerPlant);
+            RunAlgorithm(Load, NumberOfPowerPlant);
             FillPowerInPowerPlant();
             return PowerPlantList.Select(e => new ProductionPlan() { Name = e.Name, Production = e.Power });
         }
 
         private IEnumerable<PowerPlant> FillPowerInPowerPlant()
         {
-            int n = 1;           
+            int powerPlantN = 1;           
             foreach (var powerPlant in PowerPlantList)
             {
-                if (PreCalculedPowerPlantPowerHasValue(PreCalculedValue.GetLength(0) * Step, PreCalculedValue.GetLength(1),n))
+                if (PreComputedPowerPlantPowerHasValue(PreComputedValues.GetLength(0) * Step, PreComputedValues.GetLength(1),powerPlantN))
                 {
-                    powerPlant.Power = GetPreCalculedPowerPlantPower(PreCalculedValue.GetLength(0) *Step, PreCalculedValue.GetLength(1) , n);
+                    powerPlant.Power = GetPreComputedPowerPlantPower(PreComputedValues.GetLength(0) *Step, PreComputedValues.GetLength(1) , powerPlantN);
                 }
                 else
                 {
                     powerPlant.Power = 0;
                 }
-                n++;
+                powerPlantN++;
             }
             return PowerPlantList;
         }
@@ -55,7 +54,7 @@ namespace PowerPlantAPI.Services
             return PowerPlantList[n - 1];
         }
 
-        private decimal? DynamicAlgoBaseCase(decimal load, int n)
+        private decimal? RunAlgorithmBaseCase(decimal load, int n)
         {
             if (load == 0)
             {
@@ -71,30 +70,30 @@ namespace PowerPlantAPI.Services
                 if (GetPowerPlant(n).MaxProduction < load || GetPowerPlant(n).PowerMin > load)
                 {
                     var price = decimal.MaxValue;
-                    SetPreCalculedPrice(load, n, price);
+                    SetPreComputedPrice(load, n, price);
                     return price;
                 }
                 else
                 {
-                    SetPreCalculedPowerPlant(load, n, n, load);
+                    SetPreComputedPowerPlant(load, n, n, load);
                     var price = GetPriceForUnitN(n, load);
-                    SetPreCalculedPrice(load, n, price);
+                    SetPreComputedPrice(load, n, price);
                     return price;
                 }
             }
             return null;
         }
 
-        private decimal DynamicAlgo(decimal load, int n)
+        private decimal RunAlgorithm(decimal load, int n)
         {
-            var price = DynamicAlgoBaseCase(load, n);
+            var price = RunAlgorithmBaseCase(load, n);
             if (price != null)
             {
                 return price.Value;
             }
-            if (IsAlreadyPreCalculedMinPrice(load, n))
+            if (IsAlreadyPreComputedMinPrice(load, n))
             {
-                return GetPreCalculedMinPrice(load, n);
+                return GetPreComputedMinPrice(load, n);
             }
             return CalculMinPrice(load, n);
         }
@@ -102,20 +101,20 @@ namespace PowerPlantAPI.Services
         {
             var powerMin = GetMinPower(load, n);
             var price = GetMinimumPriceForTheProductionByTheNUnits(load, n, powerMin);
-            SetPreCalculedProductionN(load, n, powerMin);
-            SetPreCalculedPrice(load, n, price);
+            SetPreComputedProductionN(load, n, powerMin);
+            SetPreComputedPrice(load, n, price);
             return price;
         }
 
-        private void SetPreCalculedProductionN(decimal load, int n, decimal powerMin)
+        private void SetPreComputedProductionN(decimal load, int n, decimal powerMin)
         {   
-            int i = 1;
-            foreach (var d in GetPreCalculedPowerPlant(load - powerMin, n - 1))
+            int powerPlantN = 1;
+            foreach (var d in GetPreComputedPowerPlant(load - powerMin, n - 1))
             {
-                SetPreCalculedPowerPlant(load, n, i, d.Power);
-                i++;
+                SetPreComputedPowerPlant(load, n, powerPlantN, d.Power);
+                powerPlantN++;
             }
-            SetPreCalculedPowerPlant(load, n, n, powerMin);
+            SetPreComputedPowerPlant(load, n, n, powerMin);
         }
 
         //find min in the list of fN(y) + FN-1(x-y)
@@ -137,7 +136,7 @@ namespace PowerPlantAPI.Services
                     powerMinPrice = tempMinimumPrice;
                 }
 
-                //include 0
+                //include 0 power
                 if (firstValue)
                 {
                     power += GetPowerPlant(n).PowerMin;
@@ -155,64 +154,64 @@ namespace PowerPlantAPI.Services
         private decimal GetMinimumPriceForTheProductionByTheNUnits(decimal load, int n, decimal power)
         {
             //FN-1 (x – y) = the minimum cost of generating (x – y) MW by the remaining (N – 1) units
-            var tempSubPrice = DynamicAlgo(load - power, n - 1);
-            decimal tempPrice;
-            if (tempSubPrice == decimal.MaxValue)
+            var SubPrice = RunAlgorithm(load - power, n - 1);
+            decimal price;
+            if (SubPrice == decimal.MaxValue)
             {
-                tempPrice = decimal.MaxValue;
+                price = decimal.MaxValue;
             }
             else
             {
                 //fn(y) + FN-1 (x – y)
-                tempPrice = GetPriceForUnitN(n, power) + tempSubPrice;
+                price = GetPriceForUnitN(n, power) + SubPrice;
             }
-            return tempPrice;
+            return price;
         }
 
         //fN (y) = cost of generating y MW by the Nth unit
-        private decimal GetPriceForUnitN(int n, decimal power)
+        private decimal GetPriceForUnitN(int powerPlantN, decimal power)
         {
-            return GetPowerPlant(n).PricePerMWH * power;
+            return GetPowerPlant(powerPlantN).PricePerMWH * power;
         }
 
-        private void SetPreCalculedPowerPlant(decimal load, int n, int powerPlantN, decimal power)
+        private void SetPreComputedPowerPlant(decimal load, int n, int powerPlantN, decimal power)
         {
-            GetPreCalculedValue(load, n).ProductionPlants[powerPlantN-1].Power = power;
+            GetPreComputedValue(load, n).ProductionPlants[powerPlantN-1].Power = power;
         }
 
-        private PreCalculedProductionPlants[] GetPreCalculedPowerPlant(decimal load, int n)
+        private PreComputedProductionPlants[] GetPreComputedPowerPlant(decimal load, int n)
         {
-            return GetPreCalculedValue(load, n).ProductionPlants;
+            return GetPreComputedValue(load, n).ProductionPlants;
         }
 
-        private bool PreCalculedPowerPlantPowerHasValue(decimal load, int n, int powerPlantN)
+        private bool PreComputedPowerPlantPowerHasValue(decimal load, int n, int powerPlantN)
         {
-            return GetPreCalculedPowerPlantPower(PreCalculedValue.GetLength(0) * Step, PreCalculedValue.GetLength(1), n) != -1;
+            return GetPreComputedPowerPlantPower(load, n, powerPlantN) != -1;
         }
 
-        private Decimal GetPreCalculedPowerPlantPower(decimal load, int n,int powerPlantN)
+        private Decimal GetPreComputedPowerPlantPower(decimal load, int n,int powerPlantN)
         {
-            return GetPreCalculedValue(load, n).ProductionPlants[powerPlantN-1].Power;
+            return GetPreComputedValue(load, n).ProductionPlants[powerPlantN-1].Power;
         }
 
-        private bool IsAlreadyPreCalculedMinPrice(decimal load, int n)
+        private bool IsAlreadyPreComputedMinPrice(decimal load, int n)
         {
-            return GetPreCalculedValue(load, n).Price != -1;
+            return GetPreComputedValue(load, n).Price != -1;
         }
 
-        private decimal GetPreCalculedMinPrice(decimal load, int n)
+        private decimal GetPreComputedMinPrice(decimal load, int n)
         {
-            return GetPreCalculedValue(load, n).Price;
+            return GetPreComputedValue(load, n).Price;
         }
 
-        private void SetPreCalculedPrice(decimal load, int n, decimal price)
+        private void SetPreComputedPrice(decimal load, int n, decimal price)
         {
-            GetPreCalculedValue(load, n).Price = price;
+            GetPreComputedValue(load, n).Price = price;
         }
 
-        private PreCalculedValue GetPreCalculedValue(decimal load, int n)
+        private PreComputedValue GetPreComputedValue(decimal load, int n)
         {
-            return PreCalculedValue[(int)(load / Step) - 1, n - 1];
+            return PreComputedValues[(int)(load / Step) - 1, n - 1];
         }
     }
 }

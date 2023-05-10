@@ -1,6 +1,6 @@
 ﻿namespace PowerPlantAPI.Services
 {
-    public class PreCalculedProductionPlants
+    public class PreComputedProductionPlants
     {
         public decimal Power { get; set; }
     }
