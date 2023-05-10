@@ -3,8 +3,7 @@
 namespace PowerPlantAPI.Services
 {
 
-
-    public class AlgorithmDynamic : IProductionPlanCalculator
+    public class DynamicAlgorithm : IProductionPlanCalculator
     {
         private PreComputedValue[,] PreComputedValues { get; set; }
 
@@ -16,7 +15,8 @@ namespace PowerPlantAPI.Services
 
         private int NumberOfPowerPlant => PowerPlantList.Count();
 
-        public AlgorithmDynamic(List<PowerPlant> powerPlantList, decimal load, decimal step)
+        // The documentation is here https://www.eeeguide.com/optimal-unit-commitment-uc/
+        public DynamicAlgorithm(List<PowerPlant> powerPlantList, decimal load, decimal step)
         {
             PowerPlantList = powerPlantList;
             Step = step;

@@ -8,7 +8,7 @@ namespace PowerPlantAPI.Services
         {
             var powerPlants = InitPowerPlant(powerPlantRequest);
             decimal step = 0.1M;
-            var algo = new AlgorithmDynamic(powerPlants.ToList(), powerPlantRequest.Load, step);
+            var algo = new DynamicAlgorithm(powerPlants.ToList(), powerPlantRequest.Load, step);
             return algo.CreateProductionPlan() ;
         }
 
